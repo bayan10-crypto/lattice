@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="kk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Зат қасиеттерінің кристалдық торға тәуелділігі</title>
+  <style>
+    :root{
+      --bg:#07131f;
+      --bg2:#071a2e;
+      --card:rgba(255,255,255,.06);
+      --card2:rgba(255,255,255,.08);
+      --line:rgba(255,255,255,.14);
+      --text:#eaf4ff;
+      --muted:#a9c3de;
+      --accent:#45d6ff;
+      --accent2:#7bffb2;
+      --good:#2ef7a1;
+      --bad:#ff4d6d;
+      --warn:#ffd166;
+      --shadow: 0 14px 40px rgba(0,0,0,.35);
+      --r:18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(900px 520px at 18% 12%, rgba(69,214,255,.16), transparent 55%),
+        radial-gradient(800px 520px at 82% 20%, rgba(123,255,178,.12), transparent 55%),
+        radial-gradient(900px 600px at 55% 95%, rgba(255,209,102,.08), transparent 55%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    /* Minimal chemistry background grid + molecules */
+    .chem-bg{
+      position:fixed; inset:0; pointer-events:none;
+      background-image:
+        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.045) 1px, transparent 1px);
+      background-size: 120px 120px;
+      opacity:.35;
+    }
+    .molecule{
+      position:fixed; width:420px; height:260px; pointer-events:none; opacity:.22;
+      filter: drop-shadow(0 20px 30px rgba(0,0,0,.25));
+    }
+    .m1{ left:-40px; top:60px; transform: rotate(-8deg); }
+    .m2{ right:-60px; bottom:10px; transform: rotate(10deg); opacity:.18; }
+
+    header{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(10px);
+      background: rgba(7,19,31,.58);
+      border-bottom:1px solid var(--line);
+    }
+    .wrap{ max-width:1100px; margin:0 auto; padding:16px; }
+    .top{
+      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    }
+    .brand{ display:flex; gap:12px; align-items:center; }
+    .logo{
+      width:44px; height:44px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.18);
+      background:
+        radial-gradient(circle at 35% 35%, rgba(69,214,255,.85), rgba(69,214,255,.18) 55%, transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(123,255,178,.75), rgba(123,255,178,.14) 55%, transparent 62%),
+        linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,0));
+      box-shadow: var(--shadow);
+    }
+    h1{ margin:0; font-size:16px; letter-spacing:.2px; }
+    .sub{ margin:2px 0 0; color:var(--muted); font-size:12px; }
+
+    nav{ display:flex; gap:10px; flex-wrap:wrap; }
+    .tab{
+      text-decoration:none;
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      padding:10px 12px;
+      border-radius:999px;
+      font-size:13px;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+      user-select:none;
+    }
+    .tab:hover{ transform: translateY(-1px); border-color: rgba(69,214,255,.45); }
+    .tab.active{
+      background: linear-gradient(135deg, rgba(69,214,255,.22), rgba(123,255,178,.12));
+      border-color: rgba(69,214,255,.55);
+    }
+
+    main{ padding:18px 0 44px; }
+    .page{ display:none; }
+    .page.active{ display:block; }
+
+    .grid{ display:grid; gap:16px; }
+    @media (min-width: 960px){
+      .grid.cols-2{ grid-template-columns: 1.1fr .9fr; }
+      .grid.cols-3{ grid-template-columns: 1fr 1fr 1fr; }
+    }
+
+    .card{
+      border:1px solid rgba(255,255,255,.14);
+      background: linear-gradient(180deg, rgba(255,255,255,.065), rgba(255,255,255,.045));
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding:16px;
+      position:relative;
+      overflow:hidden;
+    }
+    .card:before{
+      content:"";
+      position:absolute; right:-90px; top:-90px;
+      width:220px; height:220px;
+      background: radial-gradient(circle, rgba(69,214,255,.18), transparent 60%);
+    }
+    h2{ margin:0 0 10px; font-size:18px; letter-spacing:.2px; }
+    h3{ margin:0 0 8px; font-size:14px; color:#f2f8ff; letter-spacing:.2px; }
+    p{ margin:0 0 10px; color:var(--text); }
+    .muted{ color:var(--muted); }
+
+    .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .chip{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.16);
+    }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    label.small{ font-size:12px; color:var(--muted); display:block; margin-bottom:6px; }
+    select, input[type="range"]{
+      width:100%;
+    }
+    select{
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.22);
+      color:var(--text);
+      outline:none;
+    }
+    input[type="range"]{ accent-color: var(--accent); }
+
+    button{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.18);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      transition: transform .12s ease, border-color .12s ease;
+      font-size:13px;
+    }
+    button:hover{ transform: translateY(-1px); border-color: rgba(69,214,255,.45); }
+    button.primary{
+      background: linear-gradient(135deg, rgba(69,214,255,.22), rgba(123,255,178,.12));
+      border-color: rgba(69,214,255,.55);
+    }
+    button.ghost{
+      background: rgba(255,255,255,.06);
+    }
+
+    .panel{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.14);
+      border-radius:14px;
+      padding:12px;
+    }
+    .kpi{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .kpi .box{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      border-radius:14px;
+      padding:10px;
+    }
+    .kpi .name{ color:var(--muted); font-size:12px; }
+    .kpi .val{ font-family:var(--mono); font-size:12px; margin-top:6px; }
+
+    .bar{
+      height:10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      overflow:hidden;
+      margin-top:8px;
+    }
+    .fill{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(69,214,255,.75), rgba(123,255,178,.65));
+      transition: width .25s ease;
+    }
+
+    /* True/False */
+    .tf-item{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.12);
+      border-radius:14px;
+      padding:12px;
+      margin-bottom:10px;
+    }
+    .tf-head{
+      display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .num{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:4px 8px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(69,214,255,.10);
+      white-space:nowrap;
+    }
+    .tf-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+    .pill{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .ok{ color:var(--good); font-weight:700; }
+    .bad{ color:var(--bad); font-weight:700; }
+    .warn{ color:var(--warn); font-weight:700; }
+
+    /* Quiz */
+    .q{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.12);
+      border-radius:14px;
+      padding:12px;
+      margin-bottom:10px;
+    }
+    .opt{
+      display:flex; gap:10px; align-items:flex-start;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      margin:8px 0;
+      cursor:pointer;
+      user-select:none;
+    }
+    .opt input{ margin-top:2px; }
+    .result{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.14);
+      border-radius:14px;
+      padding:12px;
+      margin-top:12px;
+      font-size:13px;
+    }
+    .footer{
+      margin-top:14px;
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    /* mini “simulation” crystal */
+    .crystal{
+      width:100%;
+      height:180px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(69,214,255,.22), transparent 55%),
+        radial-gradient(circle at 70% 55%, rgba(123,255,178,.16), transparent 60%),
+        rgba(0,0,0,.12);
+      position:relative;
+      overflow:hidden;
+    }
+    .node{
+      position:absolute;
+      width:14px; height:14px;
+      border-radius:6px;
+      border:1px solid rgba(255,255,255,.20);
+      background: rgba(255,255,255,.10);
+      box-shadow: 0 10px 18px rgba(0,0,0,.22);
+    }
+    .bond{
+      position:absolute;
+      height:2px;
+      background: rgba(255,255,255,.18);
+      transform-origin: left center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chem-bg" aria-hidden="true"></div>
+
+  <!-- simple SVG molecules -->
+  <svg class="molecule m1" viewBox="0 0 420 260" aria-hidden="true">
+    <g fill="none" stroke="rgba(234,244,255,.65)" stroke-width="2">
+      <circle cx="90" cy="120" r="18" fill="rgba(69,214,255,.22)"/>
+      <circle cx="165" cy="70" r="14" fill="rgba(123,255,178,.18)"/>
+      <circle cx="240" cy="120" r="18" fill="rgba(69,214,255,.18)"/>
+      <circle cx="320" cy="85" r="12" fill="rgba(255,209,102,.14)"/>
+      <circle cx="300" cy="175" r="16" fill="rgba(123,255,178,.14)"/>
+      <line x1="108" y1="110" x2="150" y2="80"/>
+      <line x1="178" y1="78" x2="226" y2="110"/>
+      <line x1="256" y1="110" x2="308" y2="92"/>
+      <line x1="252" y1="132" x2="288" y2="164"/>
+      <line x1="312" y1="164" x2="324" y2="100"/>
+    </g>
+  </svg>
+
+  <svg class="molecule m2" viewBox="0 0 420 260" aria-hidden="true">
+    <g fill="none" stroke="rgba(234,244,255,.55)" stroke-width="2">
+      <circle cx="100" cy="90" r="16" fill="rgba(69,214,255,.16)"/>
+      <circle cx="170" cy="130" r="12" fill="rgba(123,255,178,.14)"/>
+      <circle cx="250" cy="90" r="18" fill="rgba(69,214,255,.14)"/>
+      <circle cx="320" cy="140" r="14" fill="rgba(255,209,102,.12)"/>
+      <line x1="115" y1="98" x2="158" y2="122"/>
+      <line x1="182" y1="122" x2="236" y2="98"/>
+      <line x1="266" y1="100" x2="306" y2="132"/>
+    </g>
+  </svg>
+
+  <header>
+    <div class="wrap">
+      <div class="top">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>Заттардың қасиеттерінің кристалдық тор құрылысына тәуелділігі</h1>
+            <div class="sub">Минималистік химия дизайны • 3 бөлім: симуляция + Ш/Ж + 10 тест</div>
+          </div>
+        </div>
+
+        <nav aria-label="Навигация">
+          <a class="tab" href="#sim" data-page="sim">1) Симуляция & ақпарат</a>
+          <a class="tab" href="#tf" data-page="tf">2) Шындық/Жалған</a>
+          <a class="tab" href="#quiz" data-page="quiz">3) Тест (10)</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- 1) Simulation + info -->
+    <section id="page-sim" class="page active">
+      <div class="grid cols-2">
+        <div class="card">
+          <h2>Жалпы ақпарат</h2>
+          <p class="muted">
+            Қатты заттың қасиеттері (балқу температурасы, қаттылық, электрөткізгіштік, ерігіштік)
+            оның <b>кристалдық тор түріне</b> тәуелді. Тор түйіндерінде қандай бөлшек тұрғаны және
+            оларды қандай күш/байланыс ұстап тұрғаны басты рөл атқарады.
+          </p>
+
+          <div class="chips">
+            <span class="chip">Иондық тор</span>
+            <span class="chip">Металдық тор</span>
+            <span class="chip">Атомдық (ковалентті) тор</span>
+            <span class="chip">Молекулалық тор</span>
+          </div>
+
+          <div class="panel" style="margin-top:12px">
+            <h3>Негізгі байланыстар → қасиеттер</h3>
+            <p class="muted" style="margin:0">
+              Байланыс/тартылыс күші <b>күшті</b> болса → балқу жоғары, қаттырақ.
+              <br>Еркін заряд тасымалдаушылар (иондар/электрондар) болса → электрөткізгіштік артады.
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Симуляциялық тапсырма</h2>
+          <p class="muted">
+            Тор түрін таңдаңыз және жүйе сол торға тән қасиеттерді «модель» ретінде көрсетеді.
+            Сосын төмендегі мини-тапсырмада затты дұрыс торға сәйкестендіріп көріңіз.
+          </p>
+
+          <div class="grid" style="gap:12px">
+            <div>
+              <label class="small">Тор түрі</label>
+              <select id="latticeSelect">
+                <option value="ionic">Иондық</option>
+                <option value="metallic">Металдық</option>
+                <option value="covalent">Атомдық (ковалентті)</option>
+                <option value="molecular">Молекулалық</option>
+              </select>
+            </div>
+
+            <div class="row" style="align-items:flex-end">
+              <div style="flex:1 1 260px">
+                <label class="small">Байланыс/тартылыс «күші» (модель)</label>
+                <input id="strengthRange" type="range" min="0" max="100" value="60" />
+                <div class="muted" style="font-size:12px;margin-top:6px">
+                  Күш: <span id="strengthVal" style="font-family:var(--mono)">60</span>/100
+                </div>
+              </div>
+              <button class="primary" id="applyPresetBtn" title="Таңдалған торға тән типтік мәндерге келтіру">
+                Пресет
+              </button>
+            </div>
+
+            <div class="crystal" id="crystal" aria-label="Кристалл моделі"></div>
+
+            <div class="kpi">
+              <div class="box">
+                <div class="name">Балқу температурасы</div>
+                <div class="bar"><div class="fill" id="mpBar"></div></div>
+                <div class="val" id="mpText"></div>
+              </div>
+              <div class="box">
+                <div class="name">Қаттылық</div>
+                <div class="bar"><div class="fill" id="hardBar"></div></div>
+                <div class="val" id="hardText"></div>
+              </div>
+              <div class="box">
+                <div class="name">Ток (қатты күйде)</div>
+                <div class="bar"><div class="fill" id="condSolidBar"></div></div>
+                <div class="val" id="condSolidText"></div>
+              </div>
+              <div class="box">
+                <div class="name">Ток (балқыма/ерітінді)</div>
+                <div class="bar"><div class="fill" id="condMeltBar"></div></div>
+                <div class="val" id="condMeltText"></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3 style="margin-bottom:6px">Мини-тапсырма: «Затты торға сәйкестендір»</h3>
+              <p class="muted" style="margin-top:0">
+                Карточка сипаттамасын оқып, дұрыс тор түрін таңдаңыз.
+              </p>
+
+              <div class="panel" style="margin-top:10px">
+                <div class="row" style="justify-content:space-between">
+                  <div>
+                    <div class="muted" style="font-size:12px">Карточка</div>
+                    <div id="caseTitle" style="font-weight:700;margin-top:4px">NaCl</div>
+                  </div>
+                  <span class="chip" id="caseTag">қасиеттер</span>
+                </div>
+                <p id="caseDesc" class="muted" style="margin:10px 0 0">
+                  Қатты күйде морт, суда ериді; ерітіндісі ток өткізеді; балқуы жоғары.
+                </p>
+
+                <div class="row" style="margin-top:10px">
+                  <select id="caseAnswer" style="flex:1 1 240px">
+                    <option value="">— таңдаңыз —</option>
+                    <option value="ionic">Иондық</option>
+                    <option value="metallic">Металдық</option>
+                    <option value="covalent">Атомдық (ковалентті)</option>
+                    <option value="molecular">Молекулалық</option>
+                  </select>
+                  <button class="primary" id="checkCaseBtn">Тексеру</button>
+                  <button class="ghost" id="nextCaseBtn">Келесі</button>
+                </div>
+
+                <div class="result" id="caseResult" aria-live="polite">
+                  Дайын болғанда «Тексеру» басыңыз.
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">Навигация: жоғарыдан 2-бөлім (Ш/Ж) немесе 3-бөлім (Тест).</div>
+    </section>
+
+    <!-- 2) True/False -->
+    <section id="page-tf" class="page">
+      <div class="card">
+        <h2>Шындық / Жалған тапсырмасы</h2>
+        <p class="muted">
+          Әр тұжырымға «Шындық» немесе «Жалған» таңдаңыз. Жауап бергеннен кейін бірден тексеруге болады.
+        </p>
+
+        <div id="tfRoot"></div>
+
+        <div class="row" style="margin-top:10px">
+          <button class="primary" id="tfGradeBtn">Жалпы нәтижені шығару</button>
+          <button id="tfResetBtn">Қайта бастау</button>
+        </div>
+
+        <div class="result" id="tfResult" aria-live="polite"></div>
+      </div>
+      <div class="footer">Ескерту: Бұл бөлімдегі сұрақтар 3-бөлім тестімен қайталанбайды.</div>
+    </section>
+
+    <!-- 3) Quiz 10 -->
+    <section id="page-quiz" class="page">
+      <div class="card">
+        <h2>Тест тапсырмасы (10 сұрақ)</h2>
+        <p class="muted">Әр сұрақта бір дұрыс жауап. Соңында нәтижені шығарыңыз.</p>
+
+        <div id="quizRoot"></div>
+
+        <div class="row" style="margin-top:10px">
+          <button class="primary" id="quizGradeBtn">Нәтижені шығару</button>
+          <button id="quizResetBtn">Қайта бастау</button>
+        </div>
+
+        <div class="result" id="quizResult" aria-live="polite"></div>
+      </div>
+      <div class="footer">© Оқу мақсатында: «қасиет ↔ тор құрылысы» байланысын бекіту.</div>
+    </section>
+  </main>
+
+  <script>
+    // ---------------- Hash navigation ----------------
+    const tabs = Array.from(document.querySelectorAll(".tab"));
+    const pages = {
+      sim: document.getElementById("page-sim"),
+      tf: document.getElementById("page-tf"),
+      quiz: document.getElementById("page-quiz"),
+    };
+    function setActive(pageKey){
+      Object.entries(pages).forEach(([k, el]) => el.classList.toggle("active", k === pageKey));
+      tabs.forEach(t => t.classList.toggle("active", t.dataset.page === pageKey));
+    }
+    function route(){
+      const key = (location.hash || "#sim").replace("#","");
+      setActive(pages[key] ? key : "sim");
+    }
+    window.addEventListener("hashchange", route);
+    route();
+
+    // ---------------- Simulation model ----------------
+    const latticeSelect = document.getElementById("latticeSelect");
+    const strengthRange = document.getElementById("strengthRange");
+    const strengthVal = document.getElementById("strengthVal");
+    const applyPresetBtn = document.getElementById("applyPresetBtn");
+
+    const mpBar = document.getElementById("mpBar");
+    const hardBar = document.getElementById("hardBar");
+    const condSolidBar = document.getElementById("condSolidBar");
+    const condMeltBar = document.getElementById("condMeltBar");
+
+    const mpText = document.getElementById("mpText");
+    const hardText = document.getElementById("hardText");
+    const condSolidText = document.getElementById("condSolidText");
+    const condMeltText = document.getElementById("condMeltText");
+
+    // Typical “preset” strength for each lattice (model)
+    const presets = {
+      ionic:    { strength: 70, mp: 75, hard: 65, solid: 10, melt: 80 },
+      metallic: { strength: 55, mp: 55, hard: 45, solid: 85, melt: 85 },
+      covalent: { strength: 95, mp: 95, hard: 90, solid: 25, melt: 25 },
+      molecular:{ strength: 25, mp: 20, hard: 20, solid: 5,  melt: 5  },
+    };
+
+    // Convert strength slider + lattice to property bars (simple model)
+    function computeProps(lattice, strength){
+      const base = presets[lattice];
+      // blend slider influence: 70% base + 30% slider mapped
+      const s = Number(strength);
+      const influence = (s / 100) * 100;
+
+      const mp = Math.round(base.mp * 0.7 + influence * 0.3);
+      const hard = Math.round(base.hard * 0.7 + influence * 0.3);
+
+      // conductivity depends more on lattice than strength
+      const solid = base.solid;
+      const melt = base.melt;
+
+      return { mp, hard, solid, melt };
+    }
+
+    function pctToLabel(v){
+      if(v >= 80) return "Жоғары";
+      if(v >= 45) return "Орташа";
+      return "Төмен";
+    }
+
+    function setBar(elFill, v){ elFill.style.width = Math.max(0, Math.min(100, v)) + "%"; }
+
+    function renderProps(){
+      strengthVal.textContent = strengthRange.value;
+      const lattice = latticeSelect.value;
+      const props = computeProps(lattice, strengthRange.value);
+
+      setBar(mpBar, props.mp);
+      setBar(hardBar, props.hard);
+      setBar(condSolidBar, props.solid);
+      setBar(condMeltBar, props.melt);
+
+      mpText.textContent = `${pctToLabel(props.mp)} (модель: ${props.mp}%)`;
+      hardText.textContent = `${pctToLabel(props.hard)} (модель: ${props.hard}%)`;
+      condSolidText.textContent = `${pctToLabel(props.solid)} (модель: ${props.solid}%)`;
+      condMeltText.textContent = `${pctToLabel(props.melt)} (модель: ${props.melt}%)`;
+
+      renderCrystal(lattice, Number(strengthRange.value));
+    }
+
+    // ---------------- Mini crystal visual ----------------
+    const crystal = document.getElementById("crystal");
+
+    function clearCrystal(){ crystal.innerHTML = ""; }
+
+    function addNode(x,y,kind){
+      const d = document.createElement("div");
+      d.className = "node";
+      d.style.left = x + "%";
+      d.style.top = y + "%";
+
+      // style by kind
+      if(kind === "ion+"){
+        d.style.background = "rgba(69,214,255,.20)";
+        d.style.borderColor = "rgba(69,214,255,.45)";
+      } else if(kind === "ion-"){
+        d.style.background = "rgba(255,77,109,.16)";
+        d.style.borderColor = "rgba(255,77,109,.35)";
+      } else if(kind === "atom"){
+        d.style.background = "rgba(123,255,178,.16)";
+        d.style.borderColor = "rgba(123,255,178,.38)";
+      } else if(kind === "mol"){
+        d.style.background = "rgba(255,209,102,.14)";
+        d.style.borderColor = "rgba(255,209,102,.30)";
+      } else if(kind === "metal"){
+        d.style.background = "rgba(234,244,255,.12)";
+        d.style.borderColor = "rgba(234,244,255,.30)";
+      }
+      crystal.appendChild(d);
+      return d;
+    }
+    function addBond(x1,y1,x2,y2,alpha){
+      const b = document.createElement("div");
+      b.className = "bond";
+      const dx = x2 - x1, dy = y2 - y1;
+      const len = Math.hypot(dx,dy);
+      const ang = Math.atan2(dy,dx) * 180/Math.PI;
+      b.style.left = x1 + "%";
+      b.style.top = y1 + "%";
+      b.style.width = len + "%";
+      b.style.transform = `rotate(${ang}deg)`;
+      b.style.background = `rgba(255,255,255,${alpha})`;
+      crystal.appendChild(b);
+    }
+
+    function renderCrystal(lattice, strength){
+      clearCrystal();
+      // positions (simple lattice)
+      const pts = [
+        [20,30],[45,22],[70,30],
+        [25,60],[50,55],[75,60],
+        [35,85],[60,82],
+      ];
+      let kinds = [];
+      if(lattice === "ionic"){
+        kinds = pts.map((_,i)=> i%2===0 ? "ion+" : "ion-");
+      } else if(lattice === "covalent"){
+        kinds = pts.map(()=> "atom");
+      } else if(lattice === "metallic"){
+        kinds = pts.map(()=> "metal");
+      } else {
+        kinds = pts.map(()=> "mol");
+      }
+
+      // nodes
+      pts.forEach((p,i)=> addNode(p[0], p[1], kinds[i]));
+
+      // bonds (stronger => more/stronger lines)
+      const alpha = 0.10 + (strength/100)*0.25;
+      const edges = [
+        [0,1],[1,2],[0,3],[1,4],[2,5],[3,4],[4,5],[3,6],[4,6],[4,7],[5,7]
+      ];
+
+      // molecular: fewer weak interactions
+      const take = lattice === "molecular" ? 5 : lattice === "metallic" ? 7 : 11;
+      edges.slice(0,take).forEach(([a,b])=>{
+        addBond(pts[a][0], pts[a][1], pts[b][0], pts[b][1], alpha);
+      });
+    }
+
+    latticeSelect.addEventListener("change", renderProps);
+    strengthRange.addEventListener("input", renderProps);
+    applyPresetBtn.addEventListener("click", ()=>{
+      const lattice = latticeSelect.value;
+      strengthRange.value = presets[lattice].strength;
+      renderProps();
+    });
+    renderProps();
+
+    // ---------------- Mini matching cases ----------------
+    const cases = [
+      {
+        title:"NaCl",
+        tag:"қасиеттер",
+        desc:"Қатты күйде морт; суда ериді; ерітіндісі/балқымасы ток өткізеді; балқуы жоғары.",
+        ans:"ionic"
+      },
+      {
+        title:"Cu (мыс)",
+        tag:"қасиеттер",
+        desc:"Қатты күйде де ток пен жылуды жақсы өткізеді; иілімді, созылғыш; металл жылтыры бар.",
+        ans:"metallic"
+      },
+      {
+        title:"Алмаз",
+        tag:"қасиеттер",
+        desc:"Өте қатты; балқу температурасы өте жоғары; ерімейді; ток өткізбейді.",
+        ans:"covalent"
+      },
+      {
+        title:"I₂ (йод)",
+        tag:"қасиеттер",
+        desc:"Төмен балқу; ұшқыш; жұмсағырақ; ток өткізбейді.",
+        ans:"molecular"
+      }
+    ];
+    let caseIdx = 0;
+
+    const caseTitle = document.getElementById("caseTitle");
+    const caseTag = document.getElementById("caseTag");
+    const caseDesc = document.getElementById("caseDesc");
+    const caseAnswer = document.getElementById("caseAnswer");
+    const caseResult = document.getElementById("caseResult");
+    const checkCaseBtn = document.getElementById("checkCaseBtn");
+    const nextCaseBtn = document.getElementById("nextCaseBtn");
+
+    function renderCase(){
+      const c = cases[caseIdx];
+      caseTitle.textContent = c.title;
+      caseTag.textContent = c.tag;
+      caseDesc.textContent = c.desc;
+      caseAnswer.value = "";
+      caseResult.innerHTML = "Дайын болғанда «Тексеру» басыңыз.";
+    }
+    checkCaseBtn.addEventListener("click", ()=>{
+      const c = cases[caseIdx];
+      if(!caseAnswer.value){
+        caseResult.innerHTML = `<span class="warn">Ескерту:</span> Тор түрін таңдаңыз.`;
+        return;
+      }
+      const ok = caseAnswer.value === c.ans;
+      caseResult.innerHTML = ok
+        ? `<span class="ok">Дұрыс ✅</span> Бұл сипаттама <b>${labelOf(c.ans)}</b> торына тән.`
+        : `<span class="bad">Қате ❌</span> Дұрыс жауап: <b>${labelOf(c.ans)}</b>.`;
+    });
+    nextCaseBtn.addEventListener("click", ()=>{
+      caseIdx = (caseIdx + 1) % cases.length;
+      renderCase();
+    });
+
+    function labelOf(v){
+      return v==="ionic" ? "Иондық"
+        : v==="metallic" ? "Металдық"
+        : v==="covalent" ? "Атомдық (ковалентті)"
+        : "Молекулалық";
+    }
+    renderCase();
+
+    // ---------------- Section 2: True/False ----------------
+    const tfData = [
+      { s:"Иондық кристалдарда тор түйіндерінде катиондар мен аниондар орналасады.", a:true },
+      { s:"Металдық торда еркін электрондар болғандықтан зат қатты күйде ток өткізеді.", a:true },
+      { s:"Молекулалық кристалдарда бөлшектер арасындағы тартылыс күштері әдетте әлсіз болады.", a:true },
+      { s:"Атомдық (ковалентті) торы бар заттардың балқу температурасы көбіне төмен болады.", a:false },
+      { s:"Иондық заттар қатты күйінде әдетте ток өткізеді (әрдайым).", a:false },
+      { s:"Қасиеттерді болжауда “түйінде не тұр?” және “қандай байланыс ұстап тұр?” деген сұрақтар маңызды.", a:true },
+      { s:"Металдардың иілімділігі металдық байланыс табиғатымен байланысты.", a:true },
+      { s:"Ерігіштік әрқашан бір ғана тор түрімен анықталады, басқа факторлар әсер етпейді.", a:false }
+    ];
+
+    const tfRoot = document.getElementById("tfRoot");
+    const tfResult = document.getElementById("tfResult");
+    const tfGradeBtn = document.getElementById("tfGradeBtn");
+    const tfResetBtn = document.getElementById("tfResetBtn");
+
+    function buildTF(){
+      tfRoot.innerHTML = "";
+      tfData.forEach((item,i)=>{
+        const id = `tf${i}`;
+        const div = document.createElement("div");
+        div.className = "tf-item";
+        div.innerHTML = `
+          <div class="tf-head">
+            <div class="num">${i+1}</div>
+            <div style="flex:1 1 auto">
+              <div style="font-size:13px; line-height:1.35">${item.s}</div>
+            </div>
+            <span class="pill" id="${id}tag">—</span>
+          </div>
+
+          <div class="tf-actions">
+            <label class="opt" style="margin:0">
+              <input type="radio" name="${id}" value="true" />
+              <span>Шындық</span>
+            </label>
+            <label class="opt" style="margin:0">
+              <input type="radio" name="${id}" value="false" />
+              <span>Жалған</span>
+            </label>
+            <button class="primary" data-tfcheck="${i}">Тексеру</button>
+          </div>
+
+          <div class="muted" id="${id}msg" style="margin-top:10px;font-size:12px">Жауапты таңдаңыз.</div>
+        `;
+        tfRoot.appendChild(div);
+      });
+
+      // per-item check
+      tfRoot.querySelectorAll("button[data-tfcheck]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const i = Number(btn.dataset.tfcheck);
+          const id = `tf${i}`;
+          const sel = tfRoot.querySelector(`input[name="${id}"]:checked`);
+          const tag = document.getElementById(id+"tag");
+          const msg = document.getElementById(id+"msg");
+          if(!sel){
+            msg.innerHTML = `<span class="warn">Ескерту:</span> Таңдалмаған.`;
+            return;
+          }
+          const chosen = (sel.value === "true");
+          const ok = chosen === tfData[i].a;
+          tag.textContent = ok ? "ДҰРЫС" : "ҚАТЕ";
+          tag.style.borderColor = ok ? "rgba(46,247,161,.45)" : "rgba(255,77,109,.45)";
+          tag.style.background = ok ? "rgba(46,247,161,.10)" : "rgba(255,77,109,.10)";
+          msg.innerHTML = ok
+            ? `<span class="ok">Дұрыс ✅</span>`
+            : `<span class="bad">Қате ❌</span> Дұрыс жауап: <b>${tfData[i].a ? "Шындық" : "Жалған"}</b>.`;
+
+          // lock this item
+          tfRoot.querySelectorAll(`input[name="${id}"]`).forEach(inp => inp.disabled = true);
+          btn.disabled = true;
+        });
+      });
+
+      tfResult.innerHTML = "Барлық тұжырымдарды орындап, «Жалпы нәтижені шығару» басыңыз.";
+    }
+
+    tfGradeBtn.addEventListener("click", ()=>{
+      let correct = 0;
+      let answered = 0;
+      tfData.forEach((item,i)=>{
+        const id = `tf${i}`;
+        const sel = tfRoot.querySelector(`input[name="${id}"]:checked`);
+        if(sel){
+          answered++;
+          const chosen = (sel.value === "true");
+          if(chosen === item.a) correct++;
+        }
+      });
+      tfResult.innerHTML =
+        `Нәтиже: <b>${correct} / ${tfData.length}</b>. ` +
+        (answered < tfData.length ? `<span class="warn">(${tfData.length-answered} жауап жоқ)</span>` : "") +
+        ` <span class="muted">— Бұл бөлім «қасиет ↔ тор» логикасын бекітеді.</span>`;
+    });
+
+    tfResetBtn.addEventListener("click", buildTF);
+    buildTF();
+
+    // ---------------- Section 3: Quiz (10) ----------------
+    // (TF бөліміндегі тұжырымдармен қайталанбауы үшін басқа сұрақтар)
+    const quizData = [
+      {
+        q:"1) Қатты күйде ток өткізбейтін, бірақ балқығанда немесе ерітіндіде ток өткізетін заттарға ең тән тор түрі:",
+        options:["Металдық","Иондық","Молекулалық","Атомдық (ковалентті)"],
+        a:1
+      },
+      {
+        q:"2) Тор түйіндерінде молекулалар орналасып, олардың арасында әлсіз тартылыстар болатын тор:",
+        options:["Молекулалық","Иондық","Металдық","Атомдық (ковалентті)"],
+        a:0
+      },
+      {
+        q:"3) Төмен балқу және ұшқыштық (сублимация) қасиеті көбіне қай торға тән?",
+        options:["Металдық","Атомдық (ковалентті)","Молекулалық","Иондық"],
+        a:2
+      },
+      {
+        q:"4) Аса қаттылықтың ең ықтимал себебі:",
+        options:["Әлсіз ван-дер-Ваальс күштері","Ковалентті байланыстардың тор бойына тарауы","Иондардың суда еруі","Электрондардың қозғалысы тоқтауы"],
+        a:1
+      },
+      {
+        q:"5) Қай жұп «қасиет → тор» сәйкестігі дұрыс?",
+        options:[
+          "Созылғыштық → металдық тор",
+          "Төмен балқу → атомдық тор",
+          "Қатты күйде ток өткізу → молекулалық тор",
+          "Ерітіндісі ток өткізбейді → иондық тор"
+        ],
+        a:0
+      },
+      {
+        q:"6) Иондық кристалдың морт сынғыштығын түсіндіретін дұрыс тұжырым:",
+        options:[
+          "Қабаттар ығысқанда бірдей зарядтар жақындап тебіледі",
+          "Молекулалар еркін қозғалады",
+          "Еркін электрондар тордан шығып кетеді",
+          "Сутектік байланыстар күшейеді"
+        ],
+        a:0
+      },
+      {
+        q:"7) Қай заттың торы көбіне атомдық (ковалентті) деп қарастырылады?",
+        options:["SiO₂ (кварц)","NaCl","I₂","Cu"],
+        a:0
+      },
+      {
+        q:"8) Қасиеттерді болжауда ең бірінші қарайтын белгі:",
+        options:["Заттың түсі","Тор түйініндегі бөлшек түрі және байланыс сипаты","Заттың иісі","Қатты/сұйық екені ғана"],
+        a:1
+      },
+      {
+        q:"9) Металдық тордағы электрөткізгіштікке негізгі себеп:",
+        options:["Иондардың суда қозғалысы","Еркін электрондардың болуы","Молекулалардың тербелісі","Ковалентті тордағы байланыстар"],
+        a:1
+      },
+      {
+        q:"10) Төмендегі тұжырымдардың қайсысы дұрыс?",
+        options:[
+          "Молекулалық торда бөлшектер байланысы ең берік",
+          "Атомдық торда көп жағдайда балқу температурасы жоғары",
+          "Иондық торда қатты күйде ток өте жақсы өтеді",
+          "Металдық торда электрөткізгіштік болмайды"
+        ],
+        a:1
+      }
+    ];
+
+    const quizRoot = document.getElementById("quizRoot");
+    const quizResult = document.getElementById("quizResult");
+    const quizGradeBtn = document.getElementById("quizGradeBtn");
+    const quizResetBtn = document.getElementById("quizResetBtn");
+
+    function buildQuiz(){
+      quizRoot.innerHTML = "";
+      quizData.forEach((item,i)=>{
+        const id = `q${i}`;
+        const div = document.createElement("div");
+        div.className = "q";
+        div.innerHTML = `
+          <div class="tf-head" style="margin-bottom:6px">
+            <div class="num">${i+1}</div>
+            <div style="flex:1 1 auto; font-size:13px; line-height:1.35">${item.q}</div>
+          </div>
+          ${item.options.map((opt,oi)=>`
+            <label class="opt">
+              <input type="radio" name="${id}" value="${oi}" />
+              <span>${opt}</span>
+            </label>
+          `).join("")}
+          <div class="muted" id="${id}msg" style="font-size:12px">Бір жауап таңдаңыз.</div>
+        `;
+        quizRoot.appendChild(div);
+      });
+      quizResult.innerHTML = "Дайын болғанда «Нәтижені шығару» басыңыз.";
+    }
+
+    quizGradeBtn.addEventListener("click", ()=>{
+      let correct = 0;
+      let answered = 0;
+
+      quizData.forEach((item,i)=>{
+        const id = `q${i}`;
+        const sel = quizRoot.querySelector(`input[name="${id}"]:checked`);
+        const msg = document.getElementById(id+"msg");
+
+        // reset styling
+        const labels = Array.from(quizRoot.querySelectorAll(`input[name="${id}"]`)).map(x=>x.closest(".opt"));
+        labels.forEach(l=>{
+          l.style.borderColor = "rgba(255,255,255,.10)";
+          l.style.background = "rgba(255,255,255,.04)";
+        });
+
+        if(sel){
+          answered++;
+          const chosen = Number(sel.value);
+          // mark correct
+          labels[item.a].style.borderColor = "rgba(46,247,161,.55)";
+          labels[item.a].style.background = "rgba(46,247,161,.10)";
+          if(chosen !== item.a){
+            labels[chosen].style.borderColor = "rgba(255,77,109,.55)";
+            labels[chosen].style.background = "rgba(255,77,109,.10)";
+            msg.innerHTML = `<span class="bad">Қате</span> • Дұрыс жауап белгіленді.`;
+          } else {
+            correct++;
+            msg.innerHTML = `<span class="ok">Дұрыс</span>`;
+          }
+        } else {
+          msg.innerHTML = `<span class="warn">Жауап жоқ</span>`;
+        }
+      });
+
+      const total = quizData.length;
+      const pct = Math.round((correct/total)*100);
+      let level = "";
+      if(pct >= 90) level = `<span class="ok">Өте жақсы ✅</span>`;
+      else if(pct >= 70) level = `<span class="ok">Жақсы 👍</span>`;
+      else if(pct >= 50) level = `<span class="warn">Орташа 🙂</span>`;
+      else level = `<span class="bad">Қайталау керек 🔁</span>`;
+
+      quizResult.innerHTML =
+        `Нәтиже: <b>${correct} / ${total}</b> (${pct}%) — ${level} ` +
+        (answered < total ? `<span class="muted">| ${total-answered} сұрақ жауапсыз</span>` : "");
+    });
+
+    quizResetBtn.addEventListener("click", buildQuiz);
+    buildQuiz();
+  </script>
+</body>
+</html>
